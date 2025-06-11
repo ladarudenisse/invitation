@@ -3,86 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>3D Image Flip</title>
+  <title>Flip Page Alternate</title>
   <style>
-    body {
+    html, body {
       margin: 0;
-      background: #f0f0f0;
+      padding: 0;
+      height: 100%;
+      background: #ffffff;
+    }
+
+    body {
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      user-select: none;
+      overflow: hidden;
+      touch-action: manipulation;
     }
 
-    .flip-container {
+    .book {
       width: 400px;
       height: 600px;
-      perspective: 1000px;
-      cursor: grab;
+      perspective: 2000px;
+      cursor: pointer;
+      position: relative;
     }
 
-    .flipper {
+    .page {
       width: 100%;
       height: 100%;
-      transform-style: preserve-3d;
       position: relative;
+      transform-style: preserve-3d;
+      transform-origin: center center;
+      transition: transform 2.5s ease-in-out;
     }
 
     .front, .back {
       position: absolute;
       width: 100%;
       height: 100%;
-      backface-visibility: hidden;
       background-size: cover;
       background-position: center;
-      border: 1px solid #ccc;
+      backface-visibility: hidden;
       border-radius: 12px;
     }
 
     .front {
-      background-image: url('poza1.jpg'); /* Fața */
+      background-image: url('poza1.jpg');
+      z-index: 2;
     }
 
     .back {
-      background-image: url('poza2.jpg'); /* Verso */
+      background-image: url('poza2.jpg');
       transform: rotateY(180deg);
     }
   </style>
 </head>
 <body>
 
-  <div class="flip-container" id="flipContainer">
-    <div class="flipper" id="flipper">
+  <div class="book" id="book">
+    <div class="page" id="page">
       <div class="front"></div>
       <div class="back"></div>
     </div>
   </div>
 
   <script>
-    const flipContainer = document.getElementById('flipContainer');
-    const flipper = document.getElementById('flipper');
-    let isDragging = false;
-    let lastX = 0;
-    let rotationY = 0;
+    const page = document.getElementById('page');
+    const book = document.getElementById('book');
 
-    flipContainer.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      lastX = e.clientX;
-      flipContainer.style.cursor = 'grabbing';
-    });
+    let currentRotation = 0;
+    let flipping = false;
+    let direction = 1; // 1 = înainte, -1 = înapoi
 
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-      flipContainer.style.cursor = 'grab';
-    });
+    const flipPage = () => {
+      if (flipping) return;
+      flipping = true;
 
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const deltaX = e.clientX - lastX;
-      lastX = e.clientX;
-      rotationY += deltaX * 0.5; // Sensibilitate
-      flipper.style.transform = `rotateY(${rotationY}deg)`;
+      // schimbăm direcția
+      direction *= -1;
+      currentRotation += 900 * direction;
+
+      page.style.transform = `rotateY(${currentRotation}deg)`;
+
+      setTimeout(() => {
+        flipping = false;
+      }, 2500);
+    };
+
+    // click pentru desktop
+    book.addEventListener('click', flipPage);
+
+    // touch pentru mobil
+    book.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      flipPage();
     });
   </script>
 
