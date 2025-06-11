@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>3D Image Flip</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      user-select: none;
+    }
+
+    .flip-container {
+      width: 400px;
+      height: 600px;
+      perspective: 1000px;
+      cursor: grab;
+    }
+
+    .flipper {
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      position: relative;
+    }
+
+    .front, .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      background-size: cover;
+      background-position: center;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+    }
+
+    .front {
+      background-image: url('poza1.jpg'); /* Fața */
+    }
+
+    .back {
+      background-image: url('poza2.jpg'); /* Verso */
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="flip-container" id="flipContainer">
+    <div class="flipper" id="flipper">
+      <div class="front"></div>
+      <div class="back"></div>
+    </div>
+  </div>
+
+  <script>
+    const flipContainer = document.getElementById('flipContainer');
+    const flipper = document.getElementById('flipper');
+    let isDragging = false;
+    let lastX = 0;
+    let rotationY = 0;
+
+    flipContainer.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastX = e.clientX;
+      flipContainer.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      flipContainer.style.cursor = 'grab';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - lastX;
+      lastX = e.clientX;
+      rotationY += deltaX * 0.5; // Sensibilitate
+      flipper.style.transform = `rotateY(${rotationY}deg)`;
+    });
+  </script>
+
+</body>
+</html>
