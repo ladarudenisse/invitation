@@ -1,142 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Page Flip Elegant</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #fdfcf9 url('https://www.transparenttextures.com/patterns/paper-fibers.png');
-    }
-
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      touch-action: manipulation;
-      position: relative;
-    }
-
-    body::before {
-      content: "";
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 100vw;
-      height: 100vh;
-      background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%);
-      z-index: -1;
-    }
-
-    .book {
-      width: 400px;
-      height: 600px;
-      perspective: 2000px;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .page {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transform-origin: center center;
-      transition: transform 2.5s cubic-bezier(0.25, 1, 0.5, 1);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-      border-radius: 12px;
-    }
-
-    @keyframes nudge {
-      0% { transform: rotateY(var(--rotation)); }
-      25% { transform: rotateY(calc(var(--rotation) - 40deg)); }
-      100% { transform: rotateY(var(--rotation)); }
-    }
-
-    .nudge {
-      animation: nudge 1.2s ease-in-out;
-    }
-
-    .front, .back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      backface-visibility: hidden;
-      border-radius: 12px;
-      border: 1px solid #ddd;
-    }
-
-    .front {
-      background-image: url('poza1.jpg');
-      z-index: 2;
-    }
-
-    .back {
-      background-image: url('poza2.jpg');
-      transform: rotateY(180deg);
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Page Flip Elegant</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #fdfcf9 url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: manipulation;
+    position: relative;
+  }
+  body::before {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100vw; height: 100vh;
+    background: radial-gradient(circle, rgba(255,255,255,0.2), transparent 70%);
+    z-index: -1;
+  }
+  .book {
+    width: 400px; height: 600px;
+    perspective: 2000px;
+    cursor: pointer;
+    position: relative;
+  }
+  .page {
+    width: 100%; height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    transition: transform 2.5s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+  }
+  .front, .back {
+    position: absolute;
+    width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+  }
+  .front {
+    background-image: url('poza1.jpg');
+    z-index: 2;
+  }
+  .back {
+    background-image: url('poza2.jpg');
+    transform: rotateY(180deg);
+  }
+</style>
 </head>
 <body>
 
-  <div class="book" id="book">
-    <div class="page" id="page">
-      <div class="front"></div>
-      <div class="back"></div>
-    </div>
+<div class="book" id="book">
+  <div class="page" id="page">
+    <div class="front"></div>
+    <div class="back"></div>
   </div>
+</div>
 
-  <script>
-    const page = document.getElementById('page');
-    const book = document.getElementById('book');
+<script>
+  const page = document.getElementById('page');
+  const book = document.getElementById('book');
 
-    let currentRotation = 0;
-    let flipping = false;
-    let direction = 1;
+  let currentRotation = 0;
+  let flipping = false;
+  let nudging = false;
+  let direction = 1;
 
-    const updateRotation = () => {
-      page.style.setProperty('--rotation', `${currentRotation}deg`);
-      page.style.transform = `rotateY(${currentRotation}deg)`;
-    };
+  const updateRotation = (rot) => {
+    page.style.transform = `rotateY(${rot}deg)`;
+  };
 
-    const flipPage = () => {
-      if (flipping) return;
-      flipping = true;
+  const flipPage = () => {
+    if (flipping || nudging) return;
+    flipping = true;
+    direction *= -1;
+    currentRotation += 540 * direction;
+    updateRotation(currentRotation);
+    setTimeout(() => { flipping = false; }, 2500);
+  };
 
-      direction *= -1;
-      currentRotation += 540 * direction;
+  book.addEventListener('click', flipPage);
+  book.addEventListener('touchstart', e => {
+    e.preventDefault();
+    flipPage();
+  });
 
-      updateRotation();
+  // Animatie nudge JS (30° spre dreapta și inapoi)
+  function nudgeAnimation() {
+    if (flipping || nudging) return;
+    nudging = true;
+    const duration = 1200; // ms
+    const maxAngle = 40;
+    const startRotation = currentRotation;
+    let startTime = null;
 
-      setTimeout(() => {
-        flipping = false;
-      }, 2500);
-    };
+    function animate(time) {
+      if (!startTime) startTime = time;
+      let elapsed = time - startTime;
+      if (elapsed > duration) elapsed = duration;
 
-    // Click + Touch
-    book.addEventListener('click', flipPage);
-    book.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      flipPage();
-    });
+      // Calculăm progresul 0..1
+      let progress = elapsed / duration;
 
-    // Nudge la 5 secunde dacă nu se rotește
-    setInterval(() => {
-      if (flipping) return;
+      // Dinamică easing (easeInOutQuad)
+      if (progress < 0.5) {
+        progress = 2 * progress * progress;
+      } else {
+        progress = -1 + (4 - 2 * progress) * progress;
+      }
 
-      page.classList.add('nudge');
-      setTimeout(() => page.classList.remove('nudge'), 1200);
-    }, 5000);
+      // Mișcare: de la startRotation -> startRotation - maxAngle -> startRotation
+      // Folosim funcția simetrică ease-in-out:
+      let angle;
+      if (elapsed <= duration / 2) {
+        // prima jumătate
+        angle = startRotation - maxAngle * (elapsed / (duration / 2));
+      } else {
+        // a doua jumătate
+        angle = startRotation - maxAngle * (1 - (elapsed - duration/2) / (duration / 2));
+      }
 
-    // Setare inițială pentru transform
-    updateRotation();
-  </script>
+      updateRotation(angle);
+
+      if (elapsed < duration) {
+        requestAnimationFrame(animate);
+      } else {
+        nudging = false;
+        updateRotation(currentRotation); // Resetare la poziția curentă
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  setInterval(() => {
+    if (!flipping && !nudging) {
+      nudgeAnimation();
+    }
+  }, 5000);
+
+  updateRotation(currentRotation);
+</script>
 
 </body>
 </html>
